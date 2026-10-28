@@ -1,19 +1,17 @@
 -- sum of totalprice by month
 Select DATE_TRUNC('month', InvoiceDate), ROUND(SUM(TotalPrice),2) From online_retail
-WHERE is_cancelled = FALSE
 GROUP BY DATE_TRUNC('month', InvoiceDate)
 ORDER BY ROUND(SUM(TotalPrice),2) DESC ;
 
 -- totalprice top 10
 SELECT StockCode, MAX(Description) AS description, SUM(Quantity) AS total_Quantity, ROUND(SUM(TotalPrice),2) AS Total_Price FROM online_retail
-WHERE is_cancelled = False and StockCode NOT IN('DOT', 'M', 'POST', 'D', 'AMAZONFEE', 'CRUK', 'BANK CHARGES')
+WHERE StockCode NOT IN('DOT', 'M', 'POST', 'D', 'AMAZONFEE', 'CRUK', 'BANK CHARGES')
 GROUP BY StockCode
 ORDER BY SUM(TotalPrice) DESC
 LIMIT 10;
 
 -- totalsale by country
 SELECT Country, ROUND(SUM(TotalPrice),2) AS TotalPrice From online_retail
-WHERE is_cancelled = False
 GROUP BY Country
 ORDER BY SUM(TotalPrice) DESC;
 
