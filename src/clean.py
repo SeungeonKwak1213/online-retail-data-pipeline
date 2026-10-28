@@ -30,3 +30,4 @@ df['VIP_Customer'] = df['CustomerID'].isin(vip)
 
 df.to_csv('data/processed/Online_Retail_clean.csv', index=False)
 print(df.shape)
+print((result > 5).sum())
