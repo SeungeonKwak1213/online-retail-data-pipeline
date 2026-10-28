@@ -2,11 +2,11 @@
 Select DATE_TRUNC('month', InvoiceDate), ROUND(SUM(TotalPrice),2) From online_retail
 WHERE is_cancelled = FALSE
 GROUP BY DATE_TRUNC('month', InvoiceDate)
-ORDER BY ROUND(SUM(TotalPrice),2) ASC ;
+ORDER BY ROUND(SUM(TotalPrice),2) DESC ;
 
 -- totalprice top 10
-SELECT StockCode, MAX(Description) AS description, SUM(Quantity) AS Quantity, ROUND(SUM(TotalPrice),2) AS TotalPrice FROM online_retail
-WHERE is_cancelled = False and StockCode NOT IN('DOT', 'M', 'POST', 'D', 'AMAZONFEE', 'CRUK', 'BANC CHARGES')
+SELECT StockCode, MAX(Description) AS description, SUM(Quantity) AS total_Quantity, ROUND(SUM(TotalPrice),2) AS Total_Price FROM online_retail
+WHERE is_cancelled = False and StockCode NOT IN('DOT', 'M', 'POST', 'D', 'AMAZONFEE', 'CRUK', 'BANK CHARGES')
 GROUP BY StockCode
 ORDER BY SUM(TotalPrice) DESC
 LIMIT 10;
@@ -24,6 +24,7 @@ SELECT StockCode,
 	   COUNT(DISTINCT invoiceNo) FILTER (WHERE is_cancelled = True) AS cancelledOrder,
 	   ROUND(100.0 * COUNT(DISTINCT invoiceNo) FILTER (WHERE is_cancelled = True)  / COUNT(DISTINCT invoiceNo), 2) AS cancelledRate
 FROM online_retail
+WHERE StockCode NOT IN ('DOT', 'M', 'POST', 'D', 'AMAZONFEE', 'CRUK', 'BANK CHARGES')
 GROUP BY StockCode
 HAVING COUNT(DISTINCT invoiceno) >= 100
 ORDER BY cancelledRate DESC
