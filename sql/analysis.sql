@@ -2,7 +2,7 @@
 Select DATE_TRUNC('month', InvoiceDate), ROUND(SUM(TotalPrice),2) From online_retail
 WHERE is_cancelled = FALSE
 GROUP BY DATE_TRUNC('month', InvoiceDate)
-ORDER BY DATE_TRUNC('month', InvoiceDate) ASC ;
+ORDER BY ROUND(SUM(TotalPrice),2) ASC ;
 
 # totalprice top 10
 SELECT StockCode, MAX(Description) AS description, SUM(Quantity) AS Quantity, ROUND(SUM(TotalPrice),2) AS TotalPrice FROM online_retail
