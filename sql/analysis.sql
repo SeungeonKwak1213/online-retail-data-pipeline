@@ -28,3 +28,10 @@ GROUP BY StockCode
 HAVING COUNT(DISTINCT invoiceno) >= 100
 ORDER BY cancelledRate DESC
 Limit 10;
+
+# findVIPTotalprice
+SELECT CustomerID, SUM(TotalPrice) AS VIP_TotalPrice FROM online_retail
+WHERE VIP_Customer = True and is_cancelled = False
+GROUP BY CustomerID
+ORDER BY SUM(TotalPrice) DESC
+LIMIT 10;
