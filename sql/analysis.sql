@@ -1,23 +1,23 @@
-## sum of totalprice by month
+-- sum of totalprice by month
 Select DATE_TRUNC('month', InvoiceDate), ROUND(SUM(TotalPrice),2) From online_retail
 WHERE is_cancelled = FALSE
 GROUP BY DATE_TRUNC('month', InvoiceDate)
 ORDER BY ROUND(SUM(TotalPrice),2) ASC ;
 
-# totalprice top 10
+-- totalprice top 10
 SELECT StockCode, MAX(Description) AS description, SUM(Quantity) AS Quantity, ROUND(SUM(TotalPrice),2) AS TotalPrice FROM online_retail
-WHERE is_cancelled = False
+WHERE is_cancelled = False and StockCode NOT IN('DOT', 'M', 'POST', 'D', 'AMAZONFEE', 'CRUK', 'BANC CHARGES')
 GROUP BY StockCode
 ORDER BY SUM(TotalPrice) DESC
 LIMIT 10;
 
-# totalsale by country
+-- totalsale by country
 SELECT Country, ROUND(SUM(TotalPrice),2) AS TotalPrice From online_retail
 WHERE is_cancelled = False
 GROUP BY Country
 ORDER BY SUM(TotalPrice) DESC;
 
-# cancelledRate
+-- cancelledRate
 SELECT StockCode,
        MAX(description),
        COUNT(DISTINCT invoiceNo) AS totalOrder,
@@ -29,7 +29,7 @@ HAVING COUNT(DISTINCT invoiceno) >= 100
 ORDER BY cancelledRate DESC
 Limit 10;
 
-# findVIPTotalprice
+-- findVIPTotalprice
 SELECT CustomerID, SUM(TotalPrice) AS VIP_TotalPrice FROM online_retail
 WHERE VIP_Customer = True and is_cancelled = False
 GROUP BY CustomerID
