@@ -2,88 +2,86 @@
 
 An end-to-end data project: clean a real-world transaction dataset with Python, load it into PostgreSQL, and answer business questions with SQL.
 
-## Overview
+# Overview
 
 The project uses the [UCI Online Retail dataset](https://archive.ics.uci.edu/dataset/352/online%2Bretail), which contains transactions from a UK-based online retailer between 2010-12-01 and 2011-12-09 (541,909 rows, 38 countries).
 
 Goals
 
-- Clean the raw data (missing values, cancellations, invalid prices, duplicates)
-- Build a repeatable ETL pipeline in Python
-- Store the cleaned data in PostgreSQL
-- Analyze revenue, top products, countries, cancellations, and VIP customers with SQL
+1. Clean the raw data (missing values, cancellations, invalid prices, duplicates)
+2. Build a repeatable ETL pipeline in Python
+3. Store the cleaned data in PostgreSQL
+4. Analyze revenue, top products, countries, cancellations, and VIP customers with SQL
 
-## Tech Stack
+# Tech Stack
 
 Python (pandas, SQLAlchemy, psycopg2, python-dotenv), PostgreSQL, SQL, Git/GitHub
 
-## Pipeline
+# Pipeline
 
 ```
-Online Retail.xlsx  ->  clean.py  ->  cleaned CSV  ->  load.py  ->  PostgreSQL  ->  analysis.sql
-     (raw)            (transform)                      (load)                         (insights)
+Online Retail.xlsx -> clean.py -> cleaned CSV -> load.py -> PostgreSQL -> analysis.sql
+     (raw)            (transform)                (load)                     (insights)
 ```
 
-## Project Structure
+# Project Structure
 
 ```
 .
 ├── data/
-│   ├── Online Retail.xlsx          # raw data (not tracked by Git)
-│   └── processed/                  # cleaned CSV (not tracked by Git)
+│   ├── Online Retail.xlsx   # raw data (not tracked by Git)
+│   └── processed/           # cleaned CSV (not tracked by Git)
 ├── sql/
-│   ├── schema.sql                  # table definition
-│   └── analysis.sql                # analysis queries
+│   ├── schema.sql           # table definition
+│   └── analysis.sql         # analysis queries
 ├── src/
-│   ├── explore.py                  # first look at the data
-│   ├── explore2.py                 # counts of cancellations, invalid values, duplicates
-│   ├── clean.py                    # cleaning and feature columns
-│   ├── load.py                     # load CSV into PostgreSQL
-│   └── test_db.py                  # database connection check
+│   ├── explore.py           # first look at the data
+│   ├── explore2.py          # counts of cancellations, invalid values, duplicates
+│   ├── clean.py             # cleaning and feature columns
+│   ├── load.py              # load CSV into PostgreSQL
+│   └── test_db.py           # check database connection
 ├── requirements.txt
 └── README.md
 ```
 
-## Data Cleaning
 
-| Step | Rows remaining | Rows removed |
-|---|---|---|
-| Raw data | 541,909 | |
-| Remove `UnitPrice <= 0` | 539,392 | 2,517 |
-| Remove non-cancelled rows with `Quantity <= 0` | 539,392 | 0 (already removed by the price filter) |
-| Remove duplicate rows | 534,129 | 5,263 |
-| **Final** | **534,129** | **7,780 (about 1.4%)** |
+# Data Cleaning
 
-**Decisions and reasoning**
+- Raw data: 541,909 rows
+- Removed rows with `UnitPrice <= 0`: 2,517 rows (539,392 remaining)
+- Removed non-cancelled rows with `Quantity <= 0`: 0 additional rows (already removed by the price filter)
+- Removed duplicate rows: 5,263 rows (534,129 remaining)
+- Final: 534,129 rows, 7,780 fewer than the raw data (about 1.4%)
+
+# Decisions and reasoning
 
 - **Cancelled orders are kept, not deleted.** Invoices starting with `C` (9,288 rows) are flagged with an `is_cancelled` column. They have negative quantities, so summing them subtracts cancelled amounts and gives net revenue.
 - **Missing `CustomerID` (about 25% of rows) is kept.** Revenue, product, and country analysis does not need it. Only customer-level analysis excludes these rows.
 - **Rows with missing `Description` disappeared with the price filter.** They were internal adjustment records with a price of 0.
 - **Descriptions are trimmed.** Some had leading or trailing spaces, which would split the same product into two groups.
-- **Derived columns:** `TotalPrice = Quantity * UnitPrice`, and `VIP_Customer` (see below).
+- **Derived columns:** `TotalPrice = Quantity * UnitPrice`, and `VIP_Customer`.
 
-## Database
+# Database
 
-The `online_retail` table is defined in `sql/schema.sql` with explicit types (for example `NUMERIC` for money) and `NOT NULL` constraints on the key columns. `CustomerID` stays nullable because of the missing values above.
+The `online_retail` table is defined in `sql/schema.sql` with explicit types and `NOT NULL` constraints on the key columns. `CustomerID` stays nullable because of the missing values above.
 
 `load.py` truncates the table before loading, so running it repeatedly always produces the same 534,129 rows.
 
-## Analysis
+# Analysis
 
 All figures are in pounds sterling. Queries are in `sql/analysis.sql`.
 
-**Definitions**
+# Definitions
 
-- **Revenue is net of cancellations.** Cancelled rows are included in the sum with negative values. Excluding them would count cancelled orders as sales (for example, one order of 80,995 units that was cancelled in full).
-- **Product rankings exclude non-product codes** (`DOT`, `M`, `POST`, `D`, `AMAZONFEE`, `CRUK`, `BANK CHARGES`). Revenue totals by month and country still include them, since postage and fees are real income.
+- Revenue is net of cancellations (cancelled rows are included with negative values). Product rankings exclude non-product codes such as postage (`DOT`) and manual entries (`M`).
 
-**1. Monthly revenue**
+# 1. Monthly revenue 
 
 - Highest month: 2011-11 with £1,456,145.80
-- Lowest month: 2011-04 with £492,367.84
-- 2011-12 contains only data up to Dec 9, so it is not comparable to the other months.
+- Lowest complete month: 2011-04 with £492,367.84
+- 2011-12 has the lowest total, but it only contains data up to Dec 9, so it is not comparable to the other months.
 
-**2. Top 3 products by net revenue**
+# 2. Top 3 products by net revenue
 
 | Stock code | Product | Units | Revenue |
 |---|---|---|---|
@@ -91,7 +89,7 @@ All figures are in pounds sterling. Queries are in `sql/analysis.sql`.
 | 47566 | PARTY BUNTING | 18,006 | £98,243.88 |
 | 85123A | WHITE HANGING HEART T-LIGHT HOLDER | 35,063 | £97,838.45 |
 
-**3. Revenue by country**
+# 3. Revenue by country
 
 | Country | Revenue |
 |---|---|
@@ -101,7 +99,7 @@ All figures are in pounds sterling. Queries are in `sql/analysis.sql`.
 
 The United Kingdom accounts for the vast majority of revenue.
 
-**4. Cancellation rate by product**
+# 4. Cancellation rate by product
 
 Cancellation rate = orders with a cancellation invoice / all orders containing the product, counted by distinct invoice number. Only products with at least 100 orders are included, to avoid noisy rates from tiny samples.
 
@@ -111,7 +109,7 @@ Cancellation rate = orders with a cancellation invoice / all orders containing t
 | 37449 | CERAMIC CAKE STAND + HANGING CAKES | 179 | 25 | 13.97% |
 | 21527 | RED RETROSPOT TRADITIONAL TEAPOT | 165 | 21 | 12.73% |
 
-**5. VIP customers**
+# 5. VIP customers
 
 A VIP is a customer who contributes at least 1% of revenue among identified customers, excluding cancelled invoices. I first tried 5%, but no customer reached it, so the threshold was lowered to 1%. That gives 8 VIP customers, with about £1.38M combined revenue.
 
@@ -128,7 +126,7 @@ A VIP is a customer who contributes at least 1% of revenue among identified cust
 
 The VIP query uses revenue excluding cancelled invoices, to match how the VIP flag is defined in `clean.py`.
 
-## How to Run
+# How to Run
 
 1. Download the dataset from UCI and place `Online Retail.xlsx` in `data/`.
 2. Create the environment and install dependencies:
